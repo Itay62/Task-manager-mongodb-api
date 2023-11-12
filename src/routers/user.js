@@ -7,14 +7,16 @@ const { sendWelcomeEmail, sendCancelEmail } = require('../emails/account')
 const router = new express.Router()
 
 router.post('/users', async (req, res) => {
-    const user = new User(req.body)
 
     try {
+        const user = new User(req.body)
+
         await user.save()
         sendWelcomeEmail(user.email, user.name)
         const token = await user.generateAuthToken()
         res.status(201).send({ user, token })
     } catch (e) {
+        console.log(e)
         res.status(400).send(e)
     }
 })
@@ -76,8 +78,6 @@ router.patch('/users/me', auth, async (req, res) => {
 
 router.delete('/users/me', auth, async (req, res) => {
     try {
-        // const userEmail = req.user.email
-        // const userName = user.name
         await req.user.remove()
         sendCancelEmail(req.user.email, req.user.name)
         res.send(req.user)
